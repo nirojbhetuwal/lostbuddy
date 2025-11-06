@@ -2,7 +2,7 @@ import Item from '../models/Item.js';
 import { validationResult } from 'express-validator';
 
 // Create Item
-export const createItem = async (req, res) => {
+const createItem = async (req, res) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -43,7 +43,7 @@ export const createItem = async (req, res) => {
 };
 
 // Get All Items (with filters)
-export const getItems = async (req, res) => {
+const getItems = async (req, res) => {
   try {
     const {
       type,
@@ -72,7 +72,6 @@ export const getItems = async (req, res) => {
     // Pagination
     const skip = (parseInt(page) - 1) * parseInt(limit);
     
-    // Get items with population and sorting
     const items = await Item.find(filter)
       .populate('reporter', 'username email phone')
       .sort({ createdAt: -1 })
@@ -105,7 +104,7 @@ export const getItems = async (req, res) => {
 };
 
 // Get Single Item
-export const getItem = async (req, res) => {
+const getItem = async (req, res) => {
   try {
     const item = await Item.findById(req.params.id)
       .populate('reporter', 'username email phone');
@@ -132,7 +131,7 @@ export const getItem = async (req, res) => {
 };
 
 // Get User's Items
-export const getMyItems = async (req, res) => {
+const getMyItems = async (req, res) => {
   try {
     const items = await Item.find({ reporter: req.user.id })
       .populate('reporter', 'username email phone')
@@ -153,7 +152,7 @@ export const getMyItems = async (req, res) => {
 };
 
 // Update Item
-export const updateItem = async (req, res) => {
+const updateItem = async (req, res) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -203,7 +202,7 @@ export const updateItem = async (req, res) => {
 };
 
 // Delete Item
-export const deleteItem = async (req, res) => {
+const deleteItem = async (req, res) => {
   try {
     const item = await Item.findById(req.params.id);
     
@@ -235,5 +234,14 @@ export const deleteItem = async (req, res) => {
       success: false,
       message: 'Server error while deleting item'
     });
+  }
 };
+
+export {
+  createItem,
+  getItems,
+  getItem,
+  getMyItems,
+  updateItem,
+  deleteItem
 };

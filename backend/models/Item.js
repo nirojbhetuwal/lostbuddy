@@ -35,14 +35,8 @@ const itemSchema = new mongoose.Schema({
     required: [true, 'Date is required']
   },
   images: [{
-    url: {
-      type: String,
-      required: true
-    },
-    publicId: {
-      type: String,
-      required: true
-    }
+    url: String,
+    publicId: String
   }],
   status: {
     type: String,
@@ -85,62 +79,5 @@ itemSchema.index({ type: 1, status: 1 });
 itemSchema.index({ category: 1 });
 itemSchema.index({ location: 'text', title: 'text', description: 'text' });
 itemSchema.index({ createdAt: -1 });
-itemSchema.index({ reporter: 1 });
-itemSchema.index({ status: 1, type: 1 });
-
-// Virtual for formatted date
-itemSchema.virtual('formattedDate').get(function() {
-  return this.date.toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  });
-});
-
-// Ensure virtual fields are serialized
-itemSchema.set('toJSON', { virtuals: true });
-
-// Method to check if item can be claimed
-itemSchema.methods.canBeClaimed = function() {
-  return this.type === 'found' && this.status === 'open';
-};
-
-// Method to update status
-itemSchema.methods.updateStatus = function(newStatus) {
-  const validTransitions = {
-    'open': ['matched', 'claimed', 'closed'],
-    'matched': ['claimed', 'closed', 'open'],
-    'claimed': ['returned', 'closed'],
-    'returned': ['closed'],
-    'closed': []
-  };
-
-  if (validTransitions[this.status].includes(newStatus)) {
-    this.status = newStatus;
-    return true;
-  }
-  return false;
-};
-
-// Static method to get items by status
-itemSchema.statics.getByStatus = function(status) {
-  return this.find({ status }).populate('reporter', 'username email');
-};
-
-// Static method to search items
-itemSchema.statics.searchItems = function(query) {
-  return this.find({
-    $and: [
-      { isPublic: true },
-      {
-        $or: [
-          { title: { $regex: query, $options: 'i' } },
-          { description: { $regex: query, $options: 'i' } },
-          { location: { $regex: query, $options: 'i' } }
-        ]
-      }
-    ]
-  }).populate('reporter', 'username email');
-};
 
 export default mongoose.model('Item', itemSchema);

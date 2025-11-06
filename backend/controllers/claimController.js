@@ -231,24 +231,6 @@ const approveClaim = async (req, res) => {
       }
     );
 
-    // Create notifications for rejected claimants
-    const rejectedClaims = await Claimant.find({
-      item: item._id,
-      _id: { $ne: claimId },
-      status: 'rejected'
-    }).populate('user');
-
-    for (const rejectedClaim of rejectedClaims) {
-      const rejectedNotification = new Notification({
-        user: rejectedClaim.user._id,
-        type: 'claim_rejected',
-        title: 'Claim Rejected',
-        message: `Your claim for "${item.title}" has been rejected because another claim was approved.`,
-        relatedItem: item._id
-      });
-      await rejectedNotification.save();
-    }
-
     res.json({
       success: true,
       message: 'Claim approved successfully',
@@ -330,59 +312,10 @@ const rejectClaim = async (req, res) => {
   }
 };
 
-// Cancel a claim (user cancels their own claim)
-const cancelClaim = async (req, res) => {
-  try {
-    const { claimId } = req.params;
-
-    const claim = await Claimant.findById(claimId);
-
-    if (!claim) {
-      return res.status(404).json({
-        success: false,
-        message: 'Claim not found'
-      });
-    }
-
-    // Check if user owns the claim
-    if (claim.user.toString() !== req.user.id) {
-      return res.status(403).json({
-        success: false,
-        message: 'Not authorized to cancel this claim'
-      });
-    }
-
-    if (claim.status !== 'pending') {
-      return res.status(400).json({
-        success: false,
-        message: 'Only pending claims can be cancelled'
-      });
-    }
-
-    // Update claim status
-    claim.status = 'cancelled';
-    await claim.save();
-
-    res.json({
-      success: true,
-      message: 'Claim cancelled successfully',
-      data: { claim }
-    });
-
-  } catch (error) {
-    console.error('Cancel claim error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Server error while cancelling claim'
-    });
-  }
-};
-
 export {
   submitClaim,
   getMyItemClaims,
   getMyClaims,
   approveClaim,
-  rejectClaim,
-  cancelClaim
+  rejectClaim
 };

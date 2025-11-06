@@ -5,8 +5,7 @@ import {
   getMyItemClaims,
   getMyClaims,
   approveClaim,
-  rejectClaim,
-  cancelClaim
+  rejectClaim
 } from '../controllers/claimController.js';
 import auth from '../middleware/auth.js';
 
@@ -37,6 +36,5 @@ router.get('/my-items', getMyItemClaims);
 router.get('/my-claims', getMyClaims);
 router.patch('/:claimId/approve', approveClaim);
 router.patch('/:claimId/reject', rejectValidation, rejectClaim);
-router.patch('/:claimId/cancel', cancelClaim);
 
 export default router;
